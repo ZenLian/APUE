@@ -10,15 +10,13 @@
 
 /*
  * TODO:
- * 1. parse options
- * 2. map user id to user name
- * 3. list time
- * 4. symbol link -> dest file
- * 5. sort by name
- * 6. handle [-r] option to list recursively
+ * [x] parse options
+ * [ ] map user id to user name
+ * [ ] list time
+ * [ ] symbol link -> dest file
+ * [ ] sort by name
+ * [ ] handle [-r] option to list recursively
  */
-
-extern int optind;
 
 // 存储文件信息结构体
 struct fileinfo {
@@ -40,10 +38,24 @@ int flag_all  = 0;  // -a
 int flag_almost = 0;// -A
 
 // 分析选项
-void parse_opt()
+void parse_opt(int argc, char *argv[])
 {
-
-    flag_long = 1;
+    int opt;
+    while ((opt = getopt(argc, argv, "laA")) != -1) {
+        switch (opt) {
+            case 'l':
+                flag_long = 1;
+                break;
+            case 'a':
+                flag_all = 1;
+                break;
+            case 'A':
+                flag_almost = 1;
+                break;
+            default:
+                break;
+        }
+    }
     return;
 }
 
@@ -99,14 +111,14 @@ void display(struct fileinfo *fileinfo, int n, int flag_long)
             printf("%c", fileinfo[i].type);
             printf("%s.", fileinfo[i].access);
             printf(" ");
-            printf("%u", fileinfo[i].nlink);
+            printf("%lu", fileinfo[i].nlink);
             printf(" ");
             /* TODO: map id to name */
             printf("%u", fileinfo[i].uid);
             printf(" ");
             printf("%u", fileinfo[i].gid);
             printf(" ");
-            printf("%u", fileinfo[i].size);
+            printf("%lu", fileinfo[i].size);
             printf(" ");
             printf("%s", fileinfo[i].name);
             printf("\n");
@@ -128,7 +140,7 @@ void do_ls(char *pathname)
 
     // 对于目录，列出目录下文件
     dp = opendir(pathname);
-    while (direntp = readdir(dp)) {
+    while ((direntp = readdir(dp)) != NULL) {
         // 处理-a,-A
         if (flag_all) {
             ;// do nothing
@@ -178,9 +190,9 @@ void do_ls(char *pathname)
 
 int main(int argc, char *argv[])
 {
-// 分析选项
+    // 分析选项
     parse_opt(argc, argv);
-//
+
     if (optind >= argc)
         do_ls(".");
     else
